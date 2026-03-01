@@ -5,8 +5,8 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
 # ========== БЕЗОПАСНОЕ ПОЛУЧЕНИЕ ТОКЕНОВ ==========
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Берётся из переменных окружения Railway
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")          # Тоже из переменных окружения
+TELEGRAM_TOKEN = os.getenv("8544944228:AAF2rB9QyNyua_Bs0paCtX8UDwtvkW_QNGA")  # Берётся из переменных окружения Railway
+GITHUB_TOKEN = os.getenv("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")          # Тоже из переменных окружения
 
 # Проверка, что токены загружены
 if not TELEGRAM_TOKEN:
