@@ -4,24 +4,23 @@ import openai
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
-# ========== БЕЗОПАСНОЕ ПОЛУЧЕНИЕ ТОКЕНОВ ==========
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Берётся из переменных окружения Railway
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")          # Тоже из переменных окружения
+# ========== ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ ==========
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
-# Проверка, что токены загружены
 if not TELEGRAM_TOKEN:
-    raise ValueError("❌ TELEGRAM_BOT_TOKEN не найден в переменных окружения!")
+    raise ValueError("❌ TELEGRAM_BOT_TOKEN не задан! Добавьте его в переменные окружения Railway.")
 if not GITHUB_TOKEN:
-    raise ValueError("❌ GITHUB_TOKEN не найден в переменных окружения!")
+    raise ValueError("❌ GITHUB_TOKEN не задан! Добавьте его в переменные окружения Railway.")
 
-# Клиент GitHub Models (новый адрес!)
+# ========== КЛИЕНТ GITHUB MODELS (ПРАВИЛЬНЫЙ АДРЕС) ==========
 client = openai.OpenAI(
-    base_url="https://models.github.ai",  # ← ВАЖНО: новый адрес!
+    base_url="https://models.github.ai",  # ⬅️ Новый адрес!
     api_key=GITHUB_TOKEN,
     timeout=30.0
 )
 
-# Актуальные модели
+# ========== МОДЕЛИ ==========
 AVAILABLE_MODELS = {
     "deepseek-r1": {
         "name": "🧠 DeepSeek R1",
@@ -36,20 +35,19 @@ AVAILABLE_MODELS = {
         "model": "gpt-4o-mini"
     },
     "llama-3.3": {
-        "name": "🦙 Llama 3.3 70B (работает 100%)",
+        "name": "🦙 Llama 3.3 70B",
         "model": "Llama-3.3-70B-Instruct"
     }
 }
 DEFAULT_MODEL = "gpt-4o-mini"
 
-# Логирование
+# ========== ЛОГИРОВАНИЕ ==========
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# Хранилище выбранных моделей
 user_models = {}
 
 # ========== КОМАНДЫ ==========
@@ -119,12 +117,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except openai.NotFoundError as e:
         logger.error(f"404 Not Found: {e}")
         await update.message.reply_text(
-            f"❌ Модель '{model_info['name']}' временно недоступна.\n"
+            f"❌ Модель '{model_info['name']}' временно недоступна на GitHub Models.\n"
             "Попробуйте другую модель через /model"
         )
     except openai.AuthenticationError as e:
         logger.error(f"Ошибка аутентификации: {e}")
-        await update.message.reply_text("❌ Неверный токен GitHub. Проверьте переменную GITHUB_TOKEN в Railway.")
+        await update.message.reply_text("❌ Неверный токен GitHub. Проверьте GITHUB_TOKEN в переменных окружения.")
     except openai.RateLimitError as e:
         logger.error(f"Rate limit: {e}")
         await update.message.reply_text("❌ Слишком много запросов. Подождите минуту и попробуйте снова.")
@@ -135,6 +133,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ========== ЗАПУСК ==========
 def main():
+    logger.info("=== ЗАПУСК БОТА НА RAILWAY ===")
     app = Application.builder().token(TELEGRAM_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
@@ -143,7 +142,7 @@ def main():
     app.add_handler(CallbackQueryHandler(button_callback))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    logger.info("Бот запущен...")
+    logger.info("Бот запущен, начинаю polling...")
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
