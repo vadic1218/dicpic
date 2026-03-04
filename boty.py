@@ -1,6 +1,7 @@
 import os
 import logging
 import openai
+import httpx
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 
@@ -13,16 +14,19 @@ if not TELEGRAM_TOKEN:
 if not GITHUB_TOKEN:
     raise ValueError("❌ GITHUB_TOKEN не задан! Добавьте его в переменные окружения Railway.")
 
-# ========== КЛИЕНТ GITHUB MODELS ==========
-# Пробуем разные возможные адреса (актуальные на март 2026)
-# Если один не работает, закомментируйте его и раскомментируйте другой
-GITHUB_API_BASE = "https://api.github.com/models"          # Первый вариант
-# GITHUB_API_BASE = "https://models.inference.ai.azure.com"  # Второй (старый)
-# GITHUB_API_BASE = "https://api.github.com/models"          # Третий вариант
+# ========== КЛИЕНТ GITHUB MODELS (ПРАВИЛЬНАЯ НАСТРОЙКА) ==========
+# Создаём HTTP-клиент с правильными заголовками
+http_client = httpx.Client(
+    headers={
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Content-Type": "application/json"
+    }
+)
 
 client = openai.OpenAI(
-    base_url=GITHUB_API_BASE,
+    base_url="https://models.github.ai/inference",  # ВАЖНО: правильный эндпоинт
     api_key=GITHUB_TOKEN,
+    http_client=http_client,
     timeout=30.0
 )
 
@@ -30,7 +34,7 @@ client = openai.OpenAI(
 AVAILABLE_MODELS = {
     "deepseek-r1": {
         "name": "🧠 DeepSeek R1",
-        "model": "DeepSeek-R1"
+        "model": "DeepSeek-R1"  # или полный путь "deepseek/deepseek-r1"
     },
     "deepseek-v3": {
         "name": "📘 DeepSeek V3",
@@ -42,7 +46,7 @@ AVAILABLE_MODELS = {
     },
     "llama-3.3": {
         "name": "🦙 Llama 3.3 70B",
-        "model": "Llama-3.3-70B-Instruct"
+        "model": "meta/llama-3.3-70b-instruct"  # для GitHub нужно полное имя
     }
 }
 DEFAULT_MODEL = "gpt-4o-mini"
@@ -124,7 +128,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"404 Not Found: {e}")
         await update.message.reply_text(
             f"❌ Модель '{model_info['name']}' временно недоступна на GitHub Models.\n"
-            "Попробуйте другую модель через /model, либо администратор должен сменить base_url в коде."
+            "Попробуйте другую модель через /model"
         )
     except openai.AuthenticationError as e:
         logger.error(f"Ошибка аутентификации: {e}")
