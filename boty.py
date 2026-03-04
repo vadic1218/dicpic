@@ -16,7 +16,7 @@ if not GITHUB_TOKEN:
 # ========== КЛИЕНТ GITHUB MODELS ==========
 # Пробуем разные возможные адреса (актуальные на март 2026)
 # Если один не работает, закомментируйте его и раскомментируйте другой
-GITHUB_API_BASE = "https://models.github.ai"          # Первый вариант
+GITHUB_API_BASE = "https://api.github.com/models"          # Первый вариант
 # GITHUB_API_BASE = "https://models.inference.ai.azure.com"  # Второй (старый)
 # GITHUB_API_BASE = "https://api.github.com/models"          # Третий вариант
 
