@@ -14,8 +14,14 @@ if not GITHUB_TOKEN:
     raise ValueError("❌ GITHUB_TOKEN не задан! Добавьте его в переменные окружения Railway.")
 
 # ========== КЛИЕНТ GITHUB MODELS ==========
+# Пробуем разные возможные адреса (актуальные на март 2026)
+# Если один не работает, закомментируйте его и раскомментируйте другой
+GITHUB_API_BASE = "https://models.github.ai"          # Первый вариант
+# GITHUB_API_BASE = "https://models.inference.ai.azure.com"  # Второй (старый)
+# GITHUB_API_BASE = "https://api.github.com/models"          # Третий вариант
+
 client = openai.OpenAI(
-    base_url="https://models.github.ai",   # ⬅️ правильный адрес
+    base_url=GITHUB_API_BASE,
     api_key=GITHUB_TOKEN,
     timeout=30.0
 )
@@ -31,7 +37,7 @@ AVAILABLE_MODELS = {
         "model": "DeepSeek-V3"
     },
     "gpt-4o-mini": {
-        "name": "⚡ GPT-4o Mini (работает 100%)",
+        "name": "⚡ GPT-4o Mini",
         "model": "gpt-4o-mini"
     },
     "llama-3.3": {
@@ -118,7 +124,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"404 Not Found: {e}")
         await update.message.reply_text(
             f"❌ Модель '{model_info['name']}' временно недоступна на GitHub Models.\n"
-            "Попробуйте другую модель через /model"
+            "Попробуйте другую модель через /model, либо администратор должен сменить base_url в коде."
         )
     except openai.AuthenticationError as e:
         logger.error(f"Ошибка аутентификации: {e}")
