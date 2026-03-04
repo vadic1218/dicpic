@@ -13,9 +13,9 @@ if not TELEGRAM_TOKEN:
 if not GITHUB_TOKEN:
     raise ValueError("❌ GITHUB_TOKEN не задан! Добавьте его в переменные окружения Railway.")
 
-# ========== КЛИЕНТ GITHUB MODELS (ПРАВИЛЬНЫЙ АДРЕС) ==========
+# ========== КЛИЕНТ GITHUB MODELS ==========
 client = openai.OpenAI(
-    base_url="https://models.github.ai",  # ⬅️ Новый адрес!
+    base_url="https://models.github.ai",   # ⬅️ правильный адрес
     api_key=GITHUB_TOKEN,
     timeout=30.0
 )
@@ -133,16 +133,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ========== ЗАПУСК ==========
 def main():
-    logger.info("=== ЗАПУСК БОТА НА RAILWAY ===")
     app = Application.builder().token(TELEGRAM_TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("model", model_command))
     app.add_handler(CallbackQueryHandler(button_callback))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    logger.info("Бот запущен, начинаю polling...")
+    logger.info("Бот запущен...")
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
